@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>You + Me 🧩</title>
+
+  <!-- Romantic fonts (free) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg1:#fff0f5;
+      --bg2:#ffe5ec;
+      --card:#ffffff;
+      --text:#2b2b2b;
+      --accent:#ff4d6d;
+      --accent2:#ff8fa3;
+      --shadow: 0 18px 45px rgba(0,0,0,0.12);
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:28px;
+      color:var(--text);
+      font-family:'Poppins', system-ui, Arial, sans-serif;
+
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255,255,255,0.75) 0 18%, transparent 19%),
+        radial-gradient(circle at 80% 30%, rgba(255,255,255,0.65) 0 14%, transparent 15%),
+        radial-gradient(circle at 30% 80%, rgba(255,255,255,0.55) 0 12%, transparent 13%),
+        linear-gradient(135deg, var(--bg2), var(--bg1));
+      overflow:hidden;
+      position:relative;
+    }
+
+    .hearts{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:0.55;
+    }
+    .heart{
+      position:absolute;
+      font-size:18px;
+      animation: floatUp linear infinite;
+      opacity:0.9;
+    }
+    @keyframes floatUp{
+      from{ transform: translateY(25vh) translateX(0) scale(1); opacity:0; }
+      10%{ opacity:1; }
+      to{ transform: translateY(-120vh) translateX(18px) scale(1.2); opacity:0; }
+    }
+
+    .card{
+      width:min(980px, 100%);
+      background:rgba(255,255,255,0.92);
+      border-radius:24px;
+      padding:30px;
+      box-shadow:var(--shadow);
+      border:1px solid rgba(255, 77, 109, 0.12);
+      backdrop-filter: blur(6px);
+      text-align:center;
+    }
+
+    h1{
+      margin:0 0 6px;
+      font-family:'Great Vibes', cursive;
+      font-weight:400;
+      font-size:58px;
+      color:#7a0030;
+    }
+
+    p{ margin: 0 0 12px; line-height:1.7; }
+
+    .controls{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      flex-wrap:wrap;
+      margin:14px 0 8px;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:12px 18px;
+      border-radius:16px;
+      text-decoration:none;
+      font-weight:700;
+      color:white;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 12px 25px rgba(255,77,109,0.28);
+      border:1px solid rgba(255,255,255,0.35);
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+      cursor:pointer;
+    }
+    .btn:hover{ transform: translateY(-1px); box-shadow: 0 16px 30px rgba(255,77,109,0.33); }
+    .btn:active{ transform: translateY(1px); }
+
+    .btn.secondary{
+      background:#ffd6dd;
+      color:#7a0030;
+      box-shadow:none;
+      border:1px solid rgba(122,0,48,0.12);
+    }
+
+    .sparkle{
+      width:10px; height:10px;
+      border-radius:50%;
+      background:rgba(255,255,255,0.95);
+      box-shadow: 0 0 0 0 rgba(255,255,255,0.6);
+      animation: pulse 1.4s infinite;
+    }
+    @keyframes pulse{
+      0%{ box-shadow: 0 0 0 0 rgba(255,255,255,0.6); }
+      100%{ box-shadow: 0 0 0 14px rgba(255,255,255,0); }
+    }
+
+    .status{
+      color:#7a0030;
+      font-weight:700;
+      margin-top:6px;
+    }
+
+    .wrap{
+      display:flex;
+      gap:22px;
+      justify-content:center;
+      flex-wrap:wrap;
+      margin-top:18px;
+   _plugin{
+      /* placeholder to keep formatting stable in Notepad */
+    }
+
+    .panelTitle{
+      margin:0 0 10px;
+      font-weight:700;
+      color:#7a0030;
+    }
+
+    .frame{
+      border-radius:18px;
+      padding:10px;
+      background: rgba(255, 229, 236, 0.65);
+      border: 1px solid rgba(255,77,109,0.16);
+      box-shadow: 0 10px 22px rgba(255,77,109,0.10);
+    }
+
+    .grid{
+      width:300px;
+      height:300px;
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      grid-template-rows:repeat(3, 1fr);
+      gap:6px;
+      border-radius:16px;
+    }
+
+    /* Board wrapper to allow hint overlay */
+    .boardWrap{
+      position:relative;
+      width:300px;
+      height:300px;
+    }
+
+    .hintOverlay{
+      position:absolute;
+      inset:0;
+      border-radius:16px;
+      background-image:url('photo.jpg');
+      background-size:100% 100%;
+      background-repeat:no-repeat;
+      opacity:0;
+      transition:opacity 0.2s;
+      pointer-events:none;
+      box-shadow: inset 0 0 0 1px rgba(255,77,109,0.15);
+    }
+
+    .boardGrid{
+      position:absolute;
+      inset:0;
+      padding:8px;
+      border-radius:16px;
+      background: rgba(255, 229, 236, 0.55);
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      grid-template-rows:repeat(3, 1fr);
+      gap:6px;
+    }
+
+    .piecesGrid{
+      padding:8px;
+      border-radius:16px;
+      background: rgba(255,255,255,0.65);
+      border: 2px dashed rgba(255,77,109,0.35);
+    }
+
+    .slot{
+      border-radius:12px;
+      background: rgba(255,255,255,0.55);
+      border:2px solid rgba(255,77,109,0.25);
+    }
+
+    .tile{
+      width:100%;
+      height:100%;
+      border-radius:12px;
+      border:2px solid rgba(0,0,0,0.06);
+      background-image:url('photo.jpg');
+      background-repeat:no-repeat;
+      background-size:300% 300%;
+      cursor:grab;
+    }
+
+    .tiny{
+      font-size:13px;
+      opacity:0.75;
+      margin-top:10px;
+    }
+
+    .win{
+      display:none;
+      margin-top:18px;
+      padding:14px 16px;
+      border-radius:18px;
+      background: rgba(255, 214, 221, 0.55);
+      border: 1px solid rgba(122,0,48,0.12);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="hearts" aria-hidden="true">
+    <div class="heart" style="left:10%; animation-duration:10s; animation-delay:0s;">💗</div>
+    <div class="heart" style="left:25%; animation-duration:12s; animation-delay:1s;">💖</div>
+    <div class="heart" style="left:40%; animation-duration:11s; animation-delay:2s;">💘</div>
+    <div class="heart" style="left:60%; animation-duration:13s; animation-delay:0.5s;">💞</div>
+    <div class="heart" style="left:75%; animation-duration:10.5s; animation-delay:1.8s;">💓</div>
+    <div class="heart" style="left:88%; animation-duration:12.5s; animation-delay:0.2s;">💗</div>
+  </div>
+
+  <div class="card">
+    <h1>It's a YES!! 🥹💖</h1>
+    <p>Now put our picture together 🧩 (drag pieces onto the board)</p>
+
+    <div class="controls">
+      <button id="toggleHintBtn" class="btn secondary">Show Hint 👀</button>
+      <button id="resetBtn" class="btn"><span class="sparkle"></span> Shuffle / Reset 🔁</button>
+      <a class="btn secondary" href="index.html">Start Over</a>
+    </div>
+
+    <div id="imgStatus" class="status"></div>
+    <div id="status" class="status">Correct: 0/9</div>
+
+    <div class="wrap">
+      <!-- Board -->
+      <div class="frame">
+        <div class="panelTitle">Board</div>
+
+        <div class="boardWrap">
+          <div id="hintOverlay" class="hintOverlay"></div>
+          <div id="board" class="boardGrid"></div>
+        </div>
+
+        <div class="tiny">Green = correct ✅ | Red = wrong ❌</div>
+      </div>
+
+      <!-- Pieces -->
+      <div class="frame">
+        <div class="panelTitle">Pieces</div>
+
+        <div id="pieces" class="grid piecesGrid"></div>
+
+        <div class="tiny">Drag any piece to any square.</div>
+      </div>
+    </div>
+
+    <div id="win" class="win">
+      <h2 style="margin:0 0 6px; color:#7a0030;">YOU DID IT!! 💞</h2>
+      <p style="margin:0;">Thank you for saying yes. Again. Not just for Valentine's Day—for every single day I get to spend with you, I Love You Sashi 💗</p>
+    </div>
+  </div>
+
+<script>
+  const board = document.getElementById("board");
+  const pieces = document.getElementById("pieces");
+  const statusText = document.getElementById("status");
+  const winText = document.getElementById("win");
+  const hintOverlay = document.getElementById("hintOverlay");
+  const toggleHintBtn = document.getElementById("toggleHintBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const imgStatus = document.getElementById("imgStatus");
+
+  const size = 3;
+  const total = size * size;
+
+  let hintShown = false;
+
+  // Image check
+  const testImg = new Image();
+  testImg.onload = () => imgStatus.innerText = "Photo loaded ✅";
+  testImg.onerror = () => imgStatus.innerText = "Photo NOT found ❌ (make sure it is named exactly photo.jpg)";
+  testImg.src = "photo.jpg";
+
+  // Hint toggle
+  toggleHintBtn.addEventListener("click", () => {
+    hintShown = !hintShown;
+    hintOverlay.style.opacity = hintShown ? "0.40" : "0";
+    toggleHintBtn.innerText = hintShown ? "Hide Hint 🙈" : "Show Hint 👀";
+  });
+
+  // Build board slots
+  board.innerHTML = "";
+  for (let i = 0; i < total; i++) {
+    const slot = document.createElement("div");
+    slot.className = "slot";
+    slot.dataset.slot = i;
+
+    slot.addEventListener("dragover", (e) => e.preventDefault());
+    slot.addEventListener("drop", (e) => {
+      e.preventDefault();
+      const tileId = e.dataTransfer.getData("text");
+      const tile = document.getElementById(tileId);
+      if (!tile) return;
+
+      slot.innerHTML = "";
+      slot.appendChild(tile);
+      checkWinAndMark();
+    });
+
+    board.appendChild(slot);
+  }
+
+  // Make pieces
+  function makePieces(){
+    pieces.innerHTML = "";
+
+    const order = [...Array(total).keys()];
+    shuffle(order);
+
+    order.forEach((i) => {
+      const tile = document.createElement("div");
+      tile.id = "tile-" + i;
+      tile.className = "tile";
+      tile.draggable = true;
+      tile.dataset.correct = i;
+
+      const row = Math.floor(i / size);
+      const col = i % size;
+      tile.style.backgroundPosition = `${col * 50}% ${row * 50}%`;
+
+      tile.addEventListener("dragstart", (e) => {
+        e.dataTransfer.setData("text", tile.id);
+      });
+
+      pieces.appendChild(tile);
+    });
+
+    winText.style.display = "none";
+    checkWinAndMark();
+  }
+
+  // Drop back into pieces tray
+  pieces.addEventListener("dragover", (e) => e.preventDefault());
+  pieces.addEventListener("drop", (e) => {
+    e.preventDefault();
+    const tileId = e.dataTransfer.getData("text");
+    const tile = document.getElementById(tileId);
+    if (tile) pieces.appendChild(tile);
+    checkWinAndMark();
+  });
+
+  resetBtn.addEventListener("click", () => {
+    // clear board tiles
+    board.querySelectorAll(".slot").forEach(slot => slot.innerHTML = "");
+    makePieces();
+  });
+
+  function checkWinAndMark() {
+    const slots = board.querySelectorAll(".slot");
+    let correct = 0;
+
+    slots.forEach((slot) => {
+      const tile = slot.querySelector(".tile");
+
+      // neutral
+      slot.style.border = "2px solid rgba(255,77,109,0.25)";
+
+      if (tile) {
+        if (tile.dataset.correct === slot.dataset.slot) {
+          correct++;
+          slot.style.border = "2px solid rgba(0, 200, 120, 0.75)";
+        } else {
+          slot.style.border = "2px solid rgba(220, 0, 70, 0.75)";
+        }
+      }
+    });
+
+    statusText.innerText = "Correct: " + correct + "/9";
+
+    if (correct === total) {
+      winText.style.display = "block";
+    } else {
+      winText.style.display = "none";
+    }
+  }
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+  }
+
+  // Auto start
+  makePieces();
+</script>
+
+</body>
+</html>
