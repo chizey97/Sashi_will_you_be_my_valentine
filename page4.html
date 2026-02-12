@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>You + Me 🧩</title>
 
-  <!-- Romantic fonts (free) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -14,13 +13,11 @@
     :root{
       --bg1:#fff0f5;
       --bg2:#ffe5ec;
-      --card:#ffffff;
       --text:#2b2b2b;
       --accent:#ff4d6d;
       --accent2:#ff8fa3;
       --shadow: 0 18px 45px rgba(0,0,0,0.12);
     }
-
     *{ box-sizing:border-box; }
 
     body{
@@ -29,7 +26,7 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      padding:28px;
+      padding:18px;
       color:var(--text);
       font-family:'Poppins', system-ui, Arial, sans-serif;
 
@@ -40,13 +37,19 @@
         linear-gradient(135deg, var(--bg2), var(--bg1));
       overflow:hidden;
       position:relative;
+
+      opacity:0;
+      transition: opacity 320ms ease;
     }
+    body.ready{ opacity:1; }
+    body.fadeout{ opacity:0; }
 
     .hearts{
       position:fixed;
       inset:0;
       pointer-events:none;
       opacity:0.55;
+      z-index:0;
     }
     .heart{
       position:absolute;
@@ -60,22 +63,64 @@
       to{ transform: translateY(-120vh) translateX(18px) scale(1.2); opacity:0; }
     }
 
+    .musicBar{
+      position:fixed;
+      top:12px;
+      right:12px;
+      z-index:5;
+    }
+    .musicBtn{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px;
+      border-radius:16px;
+      font-weight:700;
+      border:1px solid rgba(122,0,48,0.12);
+      background:#ffd6dd;
+      color:#7a0030;
+      cursor:pointer;
+      box-shadow: 0 10px 22px rgba(255,77,109,0.10);
+      user-select:none;
+    }
+
+    /* ✅ KEY FIX: card never exceeds screen height; can scroll if needed */
     .card{
       width:min(980px, 100%);
+      max-height: calc(100vh - 32px);
+      overflow:auto;
+
       background:rgba(255,255,255,0.92);
       border-radius:24px;
-      padding:30px;
+      padding:22px;
       box-shadow:var(--shadow);
       border:1px solid rgba(255, 77, 109, 0.12);
       backdrop-filter: blur(6px);
       text-align:center;
+      position:relative;
+      z-index:1;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .card.celebrate{
+      animation: glow 1.2s ease-in-out infinite alternate;
+    }
+    @keyframes glow{
+      from{
+        box-shadow: 0 18px 45px rgba(0,0,0,0.12);
+        transform: translateY(0);
+      }
+      to{
+        box-shadow: 0 22px 60px rgba(255,77,109,0.25);
+        transform: translateY(-2px);
+      }
     }
 
     h1{
       margin:0 0 6px;
       font-family:'Great Vibes', cursive;
       font-weight:400;
-      font-size:58px;
+      font-size: clamp(42px, 7vw, 58px);
       color:#7a0030;
     }
 
@@ -132,14 +177,26 @@
       margin-top:6px;
     }
 
+    /* Puzzle area wrapper so we can hide it on completion */
+    #puzzleArea{
+      margin-top:18px;
+      transition: opacity 420ms ease, transform 420ms ease;
+    }
+    #puzzleArea.hidden{
+      opacity:0;
+      transform: translateY(8px) scale(0.99);
+      pointer-events:none;
+      height:0;
+      overflow:hidden;
+      margin-top:0;
+    }
+
     .wrap{
       display:flex;
       gap:22px;
       justify-content:center;
       flex-wrap:wrap;
       margin-top:18px;
-   _plugin{
-      /* placeholder to keep formatting stable in Notepad */
     }
 
     .panelTitle{
@@ -166,11 +223,18 @@
       border-radius:16px;
     }
 
-    /* Board wrapper to allow hint overlay */
+    @media (max-width: 720px){
+      .grid{ width: min(92vw, 330px); height: min(92vw, 330px); }
+      .frame{ width: min(92vw, 360px); }
+    }
+
     .boardWrap{
       position:relative;
       width:300px;
       height:300px;
+    }
+    @media (max-width: 720px){
+      .boardWrap{ width: min(92vw, 330px); height: min(92vw, 330px); }
     }
 
     .hintOverlay{
@@ -230,16 +294,95 @@
 
     .win{
       display:none;
-      margin-top:18px;
+      margin-top:14px;
       padding:14px 16px;
       border-radius:18px;
       background: rgba(255, 214, 221, 0.55);
       border: 1px solid rgba(122,0,48,0.12);
     }
+
+    /* ✅ KEY FIX: reveal photo size is capped so message stays visible */
+    #reveal{
+      display:none;
+      margin-top:14px;
+      animation: revealFade 650ms ease forwards;
+    }
+    @keyframes revealFade{
+      from{ opacity:0; transform: translateY(10px) scale(0.985); }
+      to{ opacity:1; transform: translateY(0) scale(1); }
+    }
+
+    .photoFrame{
+      width: min(520px, 92vw);
+      height: min(420px, 45vh); /* <= keeps it from taking the whole screen */
+      border-radius:22px;
+      position:relative;
+      overflow:hidden;
+      margin: 0 auto;
+      border: 1px solid rgba(255,77,109,0.20);
+      box-shadow: 0 20px 55px rgba(255,77,109,0.18);
+      background: rgba(255,255,255,0.55);
+    }
+
+    .photo{
+      position:absolute;
+      inset:0;
+      background-image:url('photo.jpg');
+      background-size: cover;
+      background-position:center;
+      transform: scale(1.06);
+      animation: slowZoom 2.8s ease forwards;
+      filter: saturate(1.05) contrast(1.02);
+    }
+    @keyframes slowZoom{
+      from{ transform: scale(1.10); }
+      to{ transform: scale(1.00); }
+    }
+
+    .shimmer{
+      position:absolute;
+      inset:-40%;
+      background: linear-gradient(120deg,
+        rgba(255,255,255,0) 40%,
+        rgba(255,255,255,0.35) 50%,
+        rgba(255,255,255,0) 60%);
+      transform: rotate(10deg) translateX(-60%);
+      animation: shimmerMove 2.2s ease-in-out infinite;
+      mix-blend-mode: screen;
+      pointer-events:none;
+    }
+    @keyframes shimmerMove{
+      0%{ transform: rotate(10deg) translateX(-60%); opacity:0.0; }
+      35%{ opacity:0.75; }
+      70%{ opacity:0.55; }
+      100%{ transform: rotate(10deg) translateX(60%); opacity:0.0; }
+    }
+
+    .ring{
+      position:absolute;
+      inset:10px;
+      border-radius:18px;
+      box-shadow: 0 0 0 2px rgba(255,77,109,0.18), 0 0 34px rgba(255,77,109,0.25);
+      pointer-events:none;
+    }
+
+    .confetti{
+      position:fixed;
+      z-index:9999;
+      pointer-events:none;
+      font-size:18px;
+      will-change: transform, opacity;
+    }
   </style>
 </head>
 
 <body>
+  <div class="musicBar">
+    <button id="musicBtn" class="musicBtn">⏸ Pause</button>
+  </div>
+
+  <audio id="bgm" src="music.mp3" loop preload="auto"></audio>
+
   <div class="hearts" aria-hidden="true">
     <div class="heart" style="left:10%; animation-duration:10s; animation-delay:0s;">💗</div>
     <div class="heart" style="left:25%; animation-duration:12s; animation-delay:1s;">💖</div>
@@ -249,7 +392,7 @@
     <div class="heart" style="left:88%; animation-duration:12.5s; animation-delay:0.2s;">💗</div>
   </div>
 
-  <div class="card">
+  <div class="card" id="card">
     <h1>It's a YES!! 🥹💖</h1>
     <p>Now put our picture together 🧩 (drag pieces onto the board)</p>
 
@@ -262,27 +405,32 @@
     <div id="imgStatus" class="status"></div>
     <div id="status" class="status">Correct: 0/9</div>
 
-    <div class="wrap">
-      <!-- Board -->
-      <div class="frame">
-        <div class="panelTitle">Board</div>
-
-        <div class="boardWrap">
-          <div id="hintOverlay" class="hintOverlay"></div>
-          <div id="board" class="boardGrid"></div>
+    <div id="puzzleArea">
+      <div class="wrap">
+        <div class="frame">
+          <div class="panelTitle">Board</div>
+          <div class="boardWrap">
+            <div id="hintOverlay" class="hintOverlay"></div>
+            <div id="board" class="boardGrid"></div>
+          </div>
+          <div class="tiny">Green = correct ✅ | Red = wrong ❌</div>
         </div>
 
-        <div class="tiny">Green = correct ✅ | Red = wrong ❌</div>
+        <div class="frame">
+          <div class="panelTitle">Pieces</div>
+          <div id="pieces" class="grid piecesGrid"></div>
+          <div class="tiny">Drag any piece to any square.</div>
+        </div>
       </div>
+    </div>
 
-      <!-- Pieces -->
-      <div class="frame">
-        <div class="panelTitle">Pieces</div>
-
-        <div id="pieces" class="grid piecesGrid"></div>
-
-        <div class="tiny">Drag any piece to any square.</div>
+    <div id="reveal">
+      <div class="photoFrame">
+        <div class="photo"></div>
+        <div class="shimmer"></div>
+        <div class="ring"></div>
       </div>
+      <div class="tiny" style="margin-top:10px;">Us. Always. 💗</div>
     </div>
 
     <div id="win" class="win">
@@ -292,6 +440,121 @@
   </div>
 
 <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    document.body.classList.add("ready");
+    setupNavFade();
+    setupMusic();
+  });
+
+  function fadeTo(url){
+    document.body.classList.add("fadeout");
+    setTimeout(() => { window.location.href = url; }, 320);
+  }
+
+  function setupNavFade(){
+    document.querySelectorAll('a[href$=".html"]').forEach(a => {
+      a.addEventListener("click", (e) => {
+        e.preventDefault();
+        fadeTo(a.getAttribute("href"));
+      });
+    });
+  }
+
+  // Autoplay music: tries immediately, if blocked shows "tap anywhere"
+  function setupMusic(){
+    const bgm = document.getElementById("bgm");
+    const btn = document.getElementById("musicBtn");
+
+    let helper = document.getElementById("tapHelper");
+    if(!helper){
+      helper = document.createElement("div");
+      helper.id = "tapHelper";
+      helper.style.position = "fixed";
+      helper.style.left = "50%";
+      helper.style.top = "12px";
+      helper.style.transform = "translateX(-50%)";
+      helper.style.zIndex = "9999";
+      helper.style.padding = "10px 14px";
+      helper.style.borderRadius = "16px";
+      helper.style.background = "rgba(255, 214, 221, 0.95)";
+      helper.style.border = "1px solid rgba(122,0,48,0.12)";
+      helper.style.color = "#7a0030";
+      helper.style.fontWeight = "700";
+      helper.style.boxShadow = "0 10px 22px rgba(255,77,109,0.10)";
+      helper.style.display = "none";
+      helper.textContent = "Tap anywhere to start the music 🎵";
+      document.body.appendChild(helper);
+    }
+
+    localStorage.setItem("musicOn", "true");
+    setBtn(true);
+
+    bgm.play().then(() => {
+      helper.style.display = "none";
+    }).catch(() => {
+      helper.style.display = "block";
+
+      const startOnFirstTouch = async () => {
+        try{
+          await bgm.play();
+          helper.style.display = "none";
+          document.removeEventListener("pointerdown", startOnFirstTouch);
+          document.removeEventListener("keydown", startOnFirstTouch);
+        }catch(e){}
+      };
+
+      document.addEventListener("pointerdown", startOnFirstTouch);
+      document.addEventListener("keydown", startOnFirstTouch);
+    });
+
+    btn.addEventListener("click", async () => {
+      try{
+        if(bgm.paused){
+          await bgm.play();
+          localStorage.setItem("musicOn", "true");
+          setBtn(true);
+        }else{
+          bgm.pause();
+          localStorage.setItem("musicOn", "false");
+          setBtn(false);
+        }
+      }catch(e){
+        alert("Music couldn’t play. Make sure you uploaded a file named music.mp3.");
+      }
+    });
+
+    function setBtn(on){
+      btn.textContent = on ? "⏸ Pause" : "🎵 Play";
+    }
+  }
+
+  function burstHearts(x, y){
+    const emojis = ["💗","💖","💘","💞","💓"];
+    for(let i=0; i<30; i++){
+      const s = document.createElement("span");
+      s.className = "confetti";
+      s.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+      document.body.appendChild(s);
+
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 80 + Math.random() * 170;
+      const dx = Math.cos(angle) * dist;
+      const dy = Math.sin(angle) * dist - 70;
+
+      s.style.left = x + "px";
+      s.style.top = y + "px";
+      s.style.opacity = "1";
+
+      const rot = (Math.random()*280 - 140);
+      s.animate([
+        { transform:`translate(0px,0px) rotate(0deg)`, opacity:1 },
+        { transform:`translate(${dx}px,${dy}px) rotate(${rot}deg)`, opacity:0 }
+      ], { duration: 900 + Math.random()*350, easing:"cubic-bezier(.2,.8,.2,1)" });
+
+      setTimeout(() => s.remove(), 1500);
+    }
+  }
+
   const board = document.getElementById("board");
   const pieces = document.getElementById("pieces");
   const statusText = document.getElementById("status");
@@ -300,26 +563,27 @@
   const toggleHintBtn = document.getElementById("toggleHintBtn");
   const resetBtn = document.getElementById("resetBtn");
   const imgStatus = document.getElementById("imgStatus");
+  const card = document.getElementById("card");
+  const puzzleArea = document.getElementById("puzzleArea");
+  const reveal = document.getElementById("reveal");
 
   const size = 3;
   const total = size * size;
 
   let hintShown = false;
+  let celebrated = false;
 
-  // Image check
   const testImg = new Image();
   testImg.onload = () => imgStatus.innerText = "Photo loaded ✅";
   testImg.onerror = () => imgStatus.innerText = "Photo NOT found ❌ (make sure it is named exactly photo.jpg)";
   testImg.src = "photo.jpg";
 
-  // Hint toggle
   toggleHintBtn.addEventListener("click", () => {
     hintShown = !hintShown;
     hintOverlay.style.opacity = hintShown ? "0.40" : "0";
     toggleHintBtn.innerText = hintShown ? "Hide Hint 🙈" : "Show Hint 👀";
   });
 
-  // Build board slots
   board.innerHTML = "";
   for (let i = 0; i < total; i++) {
     const slot = document.createElement("div");
@@ -341,7 +605,6 @@
     board.appendChild(slot);
   }
 
-  // Make pieces
   function makePieces(){
     pieces.innerHTML = "";
 
@@ -367,10 +630,15 @@
     });
 
     winText.style.display = "none";
+    card.classList.remove("celebrate");
+    celebrated = false;
+
+    puzzleArea.classList.remove("hidden");
+    reveal.style.display = "none";
+
     checkWinAndMark();
   }
 
-  // Drop back into pieces tray
   pieces.addEventListener("dragover", (e) => e.preventDefault());
   pieces.addEventListener("drop", (e) => {
     e.preventDefault();
@@ -381,7 +649,6 @@
   });
 
   resetBtn.addEventListener("click", () => {
-    // clear board tiles
     board.querySelectorAll(".slot").forEach(slot => slot.innerHTML = "");
     makePieces();
   });
@@ -392,8 +659,6 @@
 
     slots.forEach((slot) => {
       const tile = slot.querySelector(".tile");
-
-      // neutral
       slot.style.border = "2px solid rgba(255,77,109,0.25)";
 
       if (tile) {
@@ -410,6 +675,26 @@
 
     if (correct === total) {
       winText.style.display = "block";
+
+      if(!celebrated){
+        celebrated = true;
+
+        hintShown = true;
+        hintOverlay.style.opacity = "0.65";
+        toggleHintBtn.innerText = "Hide Hint 🙈";
+
+        card.classList.add("celebrate");
+
+        const rect = card.getBoundingClientRect();
+        burstHearts(rect.left + rect.width/2, rect.top + rect.height/2);
+
+        setTimeout(() => {
+          puzzleArea.classList.add("hidden");
+          reveal.style.display = "block";
+          // scroll inside card so the reveal + message are visible
+          card.scrollTo({ top: card.scrollHeight, behavior: "smooth" });
+        }, 650);
+      }
     } else {
       winText.style.display = "none";
     }
@@ -422,7 +707,6 @@
     }
   }
 
-  // Auto start
   makePieces();
 </script>
 

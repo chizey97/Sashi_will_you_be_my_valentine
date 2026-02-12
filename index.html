@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>For You 💌</title>
 
-  <!-- Romantic fonts (free) -->
+  <!-- Romantic fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -14,13 +14,11 @@
     :root{
       --bg1:#fff0f5;
       --bg2:#ffe5ec;
-      --card:#ffffff;
       --text:#2b2b2b;
       --accent:#ff4d6d;
       --accent2:#ff8fa3;
       --shadow: 0 18px 45px rgba(0,0,0,0.12);
     }
-
     *{ box-sizing:border-box; }
 
     body{
@@ -40,14 +38,19 @@
         linear-gradient(135deg, var(--bg2), var(--bg1));
       overflow:hidden;
       position:relative;
-    }
 
-    /* Floating hearts */
+      opacity:0;
+      transition: opacity 320ms ease;
+    }
+    body.ready{ opacity:1; }
+    body.fadeout{ opacity:0; }
+
     .hearts{
       position:fixed;
       inset:0;
       pointer-events:none;
       opacity:0.55;
+      z-index:0;
     }
     .heart{
       position:absolute;
@@ -61,6 +64,27 @@
       to{ transform: translateY(-120vh) translateX(18px) scale(1.2); opacity:0; }
     }
 
+    .musicBar{
+      position:fixed;
+      top:16px;
+      right:16px;
+      z-index:5;
+    }
+    .musicBtn{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px;
+      border-radius:16px;
+      font-weight:700;
+      border:1px solid rgba(122,0,48,0.12);
+      background:#ffd6dd;
+      color:#7a0030;
+      cursor:pointer;
+      box-shadow: 0 10px 22px rgba(255,77,109,0.10);
+      user-select:none;
+    }
+
     .card{
       width:min(780px, 100%);
       background:rgba(255,255,255,0.92);
@@ -70,6 +94,8 @@
       border:1px solid rgba(255, 77, 109, 0.12);
       backdrop-filter: blur(6px);
       text-align:center;
+      position:relative;
+      z-index:1;
     }
 
     h1{
@@ -101,7 +127,6 @@
       margin-top:18px;
     }
 
-    /* Pretty button */
     .btn{
       display:inline-flex;
       align-items:center;
@@ -136,7 +161,12 @@
 </head>
 
 <body>
-  <!-- Background hearts layer -->
+  <div class="musicBar">
+    <button id="musicBtn" class="musicBtn">⏸ Pause</button>
+  </div>
+
+  <audio id="bgm" src="music.mp3" loop preload="auto"></audio>
+
   <div class="hearts" aria-hidden="true">
     <div class="heart" style="left:10%; animation-duration:10s; animation-delay:0s;">💗</div>
     <div class="heart" style="left:25%; animation-duration:12s; animation-delay:1s;">💖</div>
@@ -150,7 +180,6 @@
     <h1>Hi Baby 💌</h1>
 
     <p>
-      
       I made you something.
       Please read it slowly and smile for me 😊<br><br>
 
@@ -170,5 +199,99 @@
 
     <p class="small">P.S. Don’t rush. Enjoy it 😄</p>
   </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    document.body.classList.add("ready");
+    setupNavFade();
+    setupMusic();
+  });
+
+  function fadeTo(url){
+    document.body.classList.add("fadeout");
+    setTimeout(() => { window.location.href = url; }, 320);
+  }
+
+  function setupNavFade(){
+    document.querySelectorAll('a[href$=".html"]').forEach(a => {
+      a.addEventListener("click", (e) => {
+        e.preventDefault();
+        fadeTo(a.getAttribute("href"));
+      });
+    });
+  }
+
+  // Autoplay music: tries immediately, if blocked shows "tap anywhere"
+  function setupMusic(){
+    const bgm = document.getElementById("bgm");
+    const btn = document.getElementById("musicBtn");
+
+    // Create helper (only used if autoplay is blocked)
+    let helper = document.getElementById("tapHelper");
+    if(!helper){
+      helper = document.createElement("div");
+      helper.id = "tapHelper";
+      helper.style.position = "fixed";
+      helper.style.left = "50%";
+      helper.style.top = "16px";
+      helper.style.transform = "translateX(-50%)";
+      helper.style.zIndex = "9999";
+      helper.style.padding = "10px 14px";
+      helper.style.borderRadius = "16px";
+      helper.style.background = "rgba(255, 214, 221, 0.95)";
+      helper.style.border = "1px solid rgba(122,0,48,0.12)";
+      helper.style.color = "#7a0030";
+      helper.style.fontWeight = "700";
+      helper.style.boxShadow = "0 10px 22px rgba(255,77,109,0.10)";
+      helper.style.display = "none";
+      helper.textContent = "Tap anywhere to start the music 🎵";
+      document.body.appendChild(helper);
+    }
+
+    // Default to ON
+    localStorage.setItem("musicOn", "true");
+    setBtn(true);
+
+    bgm.play().then(() => {
+      helper.style.display = "none";
+    }).catch(() => {
+      helper.style.display = "block";
+
+      const startOnFirstTouch = async () => {
+        try{
+          await bgm.play();
+          helper.style.display = "none";
+          document.removeEventListener("pointerdown", startOnFirstTouch);
+          document.removeEventListener("keydown", startOnFirstTouch);
+        }catch(e){
+          // keep helper visible
+        }
+      };
+
+      document.addEventListener("pointerdown", startOnFirstTouch);
+      document.addEventListener("keydown", startOnFirstTouch);
+    });
+
+    btn.addEventListener("click", async () => {
+      try{
+        if(bgm.paused){
+          await bgm.play();
+          localStorage.setItem("musicOn", "true");
+          setBtn(true);
+        }else{
+          bgm.pause();
+          localStorage.setItem("musicOn", "false");
+          setBtn(false);
+        }
+      }catch(e){
+        alert("Music couldn’t play. Make sure you uploaded a file named music.mp3.");
+      }
+    });
+
+    function setBtn(on){
+      btn.textContent = on ? "⏸ Pause" : "🎵 Play";
+    }
+  }
+</script>
 </body>
 </html>
